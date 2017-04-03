@@ -1,5 +1,6 @@
 ﻿<?xml version="1.0" encoding="utf-8"?>
 <Project DefaultTargets="Build" ToolsVersion="14.0" xmlns="http://schemas.microsoft.com/developer/msbuild/2003">
+  <Import Project="..\packages\vcpkg.C.temp.vcpkgmaster.1.0.0\build\native\vcpkg.C.temp.vcpkgmaster.props" Condition="Exists('..\packages\vcpkg.C.temp.vcpkgmaster.1.0.0\build\native\vcpkg.C.temp.vcpkgmaster.props')" />
   <Import Project="..\packages\vcpkg.D.DEV.DEV.SDK.vcpkg.1.0.0\build\native\vcpkg.D.DEV.DEV.SDK.vcpkg.props" Condition="Exists('..\packages\vcpkg.D.DEV.DEV.SDK.vcpkg.1.0.0\build\native\vcpkg.D.DEV.DEV.SDK.vcpkg.props')" />
   <ItemGroup Label="ProjectConfigurations">
     <ProjectConfiguration Include="Debug|Win32">
@@ -161,21 +162,16 @@
     </ClCompile>
     <ClCompile Include="utility.cpp" />
   </ItemGroup>
+  <ItemGroup>
+    <None Include="packages.config" />
+  </ItemGroup>
   <Import Project="$(VCTargetsPath)\Microsoft.Cpp.targets" />
   <ImportGroup Label="ExtensionTargets">
     <Import Project="..\packages\vcpkg.D.DEV.DEV.SDK.vcpkg.1.0.0\build\native\vcpkg.D.DEV.DEV.SDK.vcpkg.targets" Condition="Exists('..\packages\vcpkg.D.DEV.DEV.SDK.vcpkg.1.0.0\build\native\vcpkg.D.DEV.DEV.SDK.vcpkg.targets')" />
     <Import Project="..\packages\Microsoft.Azure.C.SharedUtility.1.0.30\build\native\Microsoft.Azure.C.SharedUtility.targets" Condition="Exists('..\packages\Microsoft.Azure.C.SharedUtility.1.0.30\build\native\Microsoft.Azure.C.SharedUtility.targets')" />
     <Import Project="..\packages\Microsoft.Azure.IoTHub.IoTHubClient.1.1.10\build\native\Microsoft.Azure.IoTHub.IoTHubClient.targets" Condition="Exists('..\packages\Microsoft.Azure.IoTHub.IoTHubClient.1.1.10\build\native\Microsoft.Azure.IoTHub.IoTHubClient.targets')" />
     <Import Project="..\packages\Microsoft.Azure.IoTHub.HttpTransport.1.1.10\build\native\Microsoft.Azure.IoTHub.HttpTransport.targets" Condition="Exists('..\packages\Microsoft.Azure.IoTHub.HttpTransport.1.1.10\build\native\Microsoft.Azure.IoTHub.HttpTransport.targets')" />
+    <Import Project="..\packages\vcpkg.C.temp.vcpkgmaster.1.0.0\build\native\vcpkg.C.temp.vcpkgmaster.targets" Condition="Exists('..\packages\vcpkg.C.temp.vcpkgmaster.1.0.0\build\native\vcpkg.C.temp.vcpkgmaster.targets')" />
   </ImportGroup>
-  <Target Name="EnsureNuGetPackageBuildImports" BeforeTargets="PrepareForBuild">
-    <PropertyGroup>
-      <ErrorText>This project references NuGet package(s) that are missing on this computer. Use NuGet Package Restore to download them.  For more information, see http://go.microsoft.com/fwlink/?LinkID=322105. The missing file is {0}.</ErrorText>
-    </PropertyGroup>
-    <Error Condition="!Exists('..\packages\vcpkg.D.DEV.DEV.SDK.vcpkg.1.0.0\build\native\vcpkg.D.DEV.DEV.SDK.vcpkg.props')" Text="$([System.String]::Format('$(ErrorText)', '..\packages\vcpkg.D.DEV.DEV.SDK.vcpkg.1.0.0\build\native\vcpkg.D.DEV.DEV.SDK.vcpkg.props'))" />
-    <Error Condition="!Exists('..\packages\vcpkg.D.DEV.DEV.SDK.vcpkg.1.0.0\build\native\vcpkg.D.DEV.DEV.SDK.vcpkg.targets')" Text="$([System.String]::Format('$(ErrorText)', '..\packages\vcpkg.D.DEV.DEV.SDK.vcpkg.1.0.0\build\native\vcpkg.D.DEV.DEV.SDK.vcpkg.targets'))" />
-    <Error Condition="!Exists('..\packages\Microsoft.Azure.C.SharedUtility.1.0.30\build\native\Microsoft.Azure.C.SharedUtility.targets')" Text="$([System.String]::Format('$(ErrorText)', '..\packages\Microsoft.Azure.C.SharedUtility.1.0.30\build\native\Microsoft.Azure.C.SharedUtility.targets'))" />
-    <Error Condition="!Exists('..\packages\Microsoft.Azure.IoTHub.IoTHubClient.1.1.10\build\native\Microsoft.Azure.IoTHub.IoTHubClient.targets')" Text="$([System.String]::Format('$(ErrorText)', '..\packages\Microsoft.Azure.IoTHub.IoTHubClient.1.1.10\build\native\Microsoft.Azure.IoTHub.IoTHubClient.targets'))" />
-    <Error Condition="!Exists('..\packages\Microsoft.Azure.IoTHub.HttpTransport.1.1.10\build\native\Microsoft.Azure.IoTHub.HttpTransport.targets')" Text="$([System.String]::Format('$(ErrorText)', '..\packages\Microsoft.Azure.IoTHub.HttpTransport.1.1.10\build\native\Microsoft.Azure.IoTHub.HttpTransport.targets'))" />
-  </Target>
+
 </Project>
