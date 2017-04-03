@@ -69,12 +69,6 @@ int _tmain(int argc, _TCHAR* argv[])
 		BOOST_LOG_TRIVIAL(error) << ", unable to parse command line";
 		return 2;
 	}
-
-
-	//std::string s1 = Utility::urlEncode("C:\\temp\\1.txt");
-
-
-
 	hr = commandLine.ParseCommandLine(argc, argv, wvecfiles, wstrCred);
 	if (hr == E_START)
 	{

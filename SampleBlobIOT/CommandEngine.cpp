@@ -19,23 +19,27 @@ HRESULT CCommandEngine::ParseCommandLine(int argc,
 	po::variables_map vm;
 	po::options_description desc("Options");
 
+	try
+	{
+		desc.add_options()
+			("help,h", "Print help messages")
+			("files,f", po::value<std::vector<std::string> >()->multitoken(), "files to copy")
+			("cred,c", po::value<std::string>(&wstrCred), "iot credencial");
+
+		po::store(po::parse_command_line(argc, argv, desc), vm); // can throw
+		po::notify(vm);
 
 
-	desc.add_options()
-		("help,h", "Print help messages")
-		("files,f", po::value<std::vector<std::string> >()->multitoken(), "files to copy")
-		("cred,c", po::value<std::string>(&wstrCred), "iot credencial");
-	if (argc < 5)
-	{
-		return E_FAIL;
-	}
-	else
-	{
-		try
+		if (argc < 5)
 		{
-			po::store(po::parse_command_line(argc, argv, desc), vm); // can throw
-			po::notify(vm);
-
+			if (vm.count("help"))
+			{
+				std::cout << "Command Line Parameter App" << std::endl << desc << std::endl;
+			}
+			return E_FAIL;
+		}
+		else
+		{
 			if (vm.count("help"))
 			{
 				std::cout << "Command Line Parameter App" << std::endl << desc << std::endl;
@@ -52,11 +56,12 @@ HRESULT CCommandEngine::ParseCommandLine(int argc,
 			}
 
 		}
-		catch (std::exception& e)
-		{
-			BOOST_LOG_TRIVIAL(error) << __FILE__ << ", unable to parse command line:" << e.what();
-			return E_FAIL;
-		}
 	}
+	catch (std::exception& e)
+	{
+		BOOST_LOG_TRIVIAL(error) << __FILE__ << ", unable to parse command line:" << e.what();
+		return E_FAIL;
+	}
+
 	return E_START;
 }
