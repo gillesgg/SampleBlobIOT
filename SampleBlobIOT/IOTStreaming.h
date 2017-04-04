@@ -13,6 +13,7 @@ public:
 	std::string GetDeviceId();
 	pplx::task<HRESULT>  SendToBlobAsync(std::string);
 	HRESULT Save(std::string wstrFileName);
+	pplx::task<HRESULT> IOTStreaming::Commit();
 
 private:
 	HRESULT DisplayJSONValue(web::json::value v);
@@ -36,5 +37,6 @@ private:
 
 	std::wstring							_wsError;
 	std::wstring							_wsMessage;
+	std::wstring							_wscorrelationId;
 
 };

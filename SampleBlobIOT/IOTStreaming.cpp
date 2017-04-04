@@ -77,16 +77,13 @@ std::string IOTStreaming::GetSharedAccessKey()
 }
 
 
-
+/// <summary>
+/// I use IoTHubClient_Auth_Create and IoTHubClient_Auth_Get_SasToken to construct the sas token
+/// </summary>
+/// <returns></returns>
 HRESULT IOTStreaming::Authenticate()
 {
 	USES_CONVERSION;
-
-	std::string ss = GetHostName();
-	std::string ss1 = GetDeviceId();
-	std::string ss2 = GetSharedAccessKey();
-
-
 
 	IOTHUB_AUTHORIZATION_HANDLE handle = IoTHubClient_Auth_Create( GetSharedAccessKey().c_str() , GetDeviceId().c_str() , NULL);
 	char* conn_string = IoTHubClient_Auth_Get_SasToken(handle, GetHostName().c_str(), TEST_EXPIRY_TIME);
@@ -105,7 +102,11 @@ HRESULT IOTStreaming::Authenticate()
 	return S_OK;
 }
 
-
+/// <summary>
+/// create the File uploads REST  https://docs.microsoft.com/en-us/azure/iot-hub/iot-hub-devguide-file-upload
+/// </summary>
+/// <param name="strFileName"></param>
+/// <returns></returns>
 pplx::task<HRESULT> IOTStreaming::SendToBlobAsync(std::string strFileName)
 {
 	USES_CONVERSION;
@@ -116,14 +117,24 @@ pplx::task<HRESULT> IOTStreaming::SendToBlobAsync(std::string strFileName)
 
 	std::string strURI		= boost::str(boost::format("https://%1%/devices/%2%/files?api-version=2016-11-14") % GetHostName() % GetDeviceId());
 
+	/*
+	
+	{
+	"correlationId": "{correlation ID received from the initial request}",
+	"isSuccess": bool,
+	"statusCode": XXX,
+	"statusDescription": "Description of status"
+	}
+	
+	*/
 
-	obj[L"blobName"] = web::json::value::string(utility::conversions::to_string_t(strFileName));
 
 	wstrURI = A2W(strURI.c_str());
 
 	web::http::client::http_client client(wstrURI);
 	
-	
+	obj[L"blobName"] = web::json::value::string(utility::conversions::to_string_t(strFileName));
+
 	web::http::http_request request(web::http::methods::POST);
 
 	request.headers().add(L"Authorization", _wstrAuthentication.c_str());
@@ -211,6 +222,12 @@ HRESULT IOTStreaming::DisplayJSONValue(web::json::value v)
 				_wsMessage = value.as_string();
 				return E_FAIL;
 			}
+
+			if (key == _T("correlationId"))
+			{
+				_wscorrelationId = value.as_string();
+
+			}
 			
 		}
 	}
@@ -244,4 +261,74 @@ HRESULT IOTStreaming::Save(std::string strFileName)
 		return E_FAIL;
 	}
 	return S_OK;
+}
+
+
+// "https://iotggtest.azure-devices.net/devices/Device1/files/notifications?api-version=2016-11-14"
+// sr=IOTGGTest.azure-devices.net%2Fdevices%2FDevice1&sig=ZrEhbPSwr6LJoiVeZJ62ftWHi2eQL7rgGbarUwqrphs%3D&se=1491244975
+
+
+pplx::task<HRESULT> IOTStreaming::Commit()
+{
+	USES_CONVERSION;
+
+
+
+	std::wstring wstrURI;
+	web::json::value obj;
+
+	std::string strURI = boost::str(boost::format("https://%1%/devices/%2%/files/notifications?api-version=2016-11-14") % GetHostName() % GetDeviceId());
+
+	obj[L"correlationId"] = web::json::value::string(utility::conversions::to_string_t(_wscorrelationId));
+	obj[L"isSuccess"] = web::json::value::boolean(true);
+	obj[L"statusCode"] = web::json::value::number(0);
+	obj[L"statusDescription"] = web::json::value::string(U(""));
+
+	wstrURI = A2W(strURI.c_str());
+
+	web::http::client::http_client client(wstrURI);
+
+
+
+	web::http::http_request request(web::http::methods::POST);
+
+	request.headers().add(L"Authorization", _wstrAuthentication.c_str());
+	request.headers().add(L"Host", A2W(GetHostName().c_str()));
+	request.headers().add(L"Content-Type", L"application/json");
+
+	request.set_body(obj);
+
+	return client.request(request).then([](web::http::http_response response) -> pplx::task<web::json::value>
+	{
+
+		if (response.status_code() == web::http::status_codes::OK)
+		{
+			return response.extract_json();
+		}
+		else
+		{
+			BOOST_LOG_TRIVIAL(error) << __FILE__ << " error, status code:" << response.status_code();
+			return response.extract_json();
+		}
+	}).then([this](pplx::task<web::json::value> previousTask)
+	{
+		HRESULT hr = S_OK;
+		try
+		{
+			web::json::value const & value = previousTask.get();
+			hr = DisplayJSONValue(value);
+			return (hr);
+
+		}
+		catch (const pplx::task_canceled& e)
+		{
+			BOOST_LOG_TRIVIAL(error) << __FILE__ << "task canceled";
+			return (E_FAIL);
+		}
+		catch (std::exception const & e)
+		{
+			std::wcout << e.what() << std::endl;
+			return (E_FAIL);
+		}
+	});
 }

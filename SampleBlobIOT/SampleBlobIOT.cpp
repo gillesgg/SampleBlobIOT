@@ -6,6 +6,12 @@
 #include "IOTStreaming.h"
 #include "utility.h"
 
+/// <summary>
+/// starting point of the sample
+/// </summary>
+/// <param name="strCred">IOT credential syntax : HostName=<host name>;DeviceId=<DeviceID> ;SharedAccessKey=<the SharedAccessKey for the device>  </param>
+/// <param name="wvecfiles">File to upload</param>
+/// <returns></returns>
 HRESULT iothub_client_sample_http_run(std::string strCred, std::vector<std::string> wvecfiles)
 {
 	HRESULT						hr = S_OK;
@@ -49,15 +55,26 @@ HRESULT iothub_client_sample_http_run(std::string strCred, std::vector<std::stri
 		if (FAILED(hr))
 		{
 			BOOST_LOG_TRIVIAL(error) << __FILE__ << " failed hr:" << hr;
-			return hr;
 		}
+
+		hr = ioHubRestCall.Commit().wait();
+		if (FAILED(hr))
+		{
+			BOOST_LOG_TRIVIAL(error) << __FILE__ << " failed hr:" << hr;
+		}
+
 		IoTHubClient_LL_Destroy(iotHubClientHandle);
 		platform_deinit();
 
 	}
 	return (hr);
 }
-
+/// <summary>
+///  starting point of execution  
+/// </summary>
+/// <param name="argc"></param>
+/// <param name="argv"></param>
+/// <returns></returns>
 int _tmain(int argc, _TCHAR* argv[])
 {
 	HRESULT								hr = S_OK;
