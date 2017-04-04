@@ -117,16 +117,6 @@ pplx::task<HRESULT> IOTStreaming::SendToBlobAsync(std::string strFileName)
 
 	std::string strURI		= boost::str(boost::format("https://%1%/devices/%2%/files?api-version=2016-11-14") % GetHostName() % GetDeviceId());
 
-	/*
-	
-	{
-	"correlationId": "{correlation ID received from the initial request}",
-	"isSuccess": bool,
-	"statusCode": XXX,
-	"statusDescription": "Description of status"
-	}
-	
-	*/
 
 
 	wstrURI = A2W(strURI.c_str());
@@ -167,18 +157,22 @@ pplx::task<HRESULT> IOTStreaming::SendToBlobAsync(std::string strFileName)
 		}
 		catch (const pplx::task_canceled& e)
 		{
-			BOOST_LOG_TRIVIAL(error) << __FILE__ << "task canceled";
+			BOOST_LOG_TRIVIAL(error) << __FILE__ << "task canceled" ;
 			return (E_FAIL);
 		}
 		catch (std::exception const & e)
 		{
-			std::wcout << e.what() << std::endl;
+			BOOST_LOG_TRIVIAL(error) << __FILE__ << e.what();
 			return (E_FAIL);
 		}
 	});
 }
 
-
+/// <summary>
+/// parse & save json key values
+/// </summary>
+/// <param name="v"></param>
+/// <returns></returns>
 HRESULT IOTStreaming::DisplayJSONValue(web::json::value v)
 {
 	if (!v.is_null())
@@ -234,6 +228,11 @@ HRESULT IOTStreaming::DisplayJSONValue(web::json::value v)
 	return S_OK;
 }
 
+/// <summary>
+/// Save the file using C++ blob SDK
+/// </summary>
+/// <param name="strFileName">the local file name</param>
+/// <returns></returns>
 HRESULT IOTStreaming::Save(std::string strFileName)
 {
 	USES_CONVERSION;
@@ -263,11 +262,10 @@ HRESULT IOTStreaming::Save(std::string strFileName)
 	return S_OK;
 }
 
-
-// "https://iotggtest.azure-devices.net/devices/Device1/files/notifications?api-version=2016-11-14"
-// sr=IOTGGTest.azure-devices.net%2Fdevices%2FDevice1&sig=ZrEhbPSwr6LJoiVeZJ62ftWHi2eQL7rgGbarUwqrphs%3D&se=1491244975
-
-
+/// <summary>
+/// When a device uploads a file and notifies IoT Hub of upload completion  https://docs.microsoft.com/en-us/azure/iot-hub/iot-hub-devguide-file-upload
+/// </summary>
+/// <returns></returns>
 pplx::task<HRESULT> IOTStreaming::Commit()
 {
 	USES_CONVERSION;
@@ -301,7 +299,7 @@ pplx::task<HRESULT> IOTStreaming::Commit()
 	return client.request(request).then([](web::http::http_response response) -> pplx::task<web::json::value>
 	{
 
-		if (response.status_code() == web::http::status_codes::OK)
+		if (response.status_code() == web::http::status_codes::OK || response.status_code() == web::http::status_codes::NoContent)
 		{
 			return response.extract_json();
 		}
@@ -327,7 +325,7 @@ pplx::task<HRESULT> IOTStreaming::Commit()
 		}
 		catch (std::exception const & e)
 		{
-			std::wcout << e.what() << std::endl;
+			BOOST_LOG_TRIVIAL(error) << __FILE__ << e.what();
 			return (E_FAIL);
 		}
 	});
